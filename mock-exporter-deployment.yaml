@@ -16,6 +16,7 @@ spec:
       containers:
       - name: mock-exporter
         image: mock-exporter:latest
+        imagePullPolicy: Never
         ports:
         - containerPort: 9400
         env:
