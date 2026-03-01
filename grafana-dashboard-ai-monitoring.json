@@ -1,9 +1,8 @@
 {
-  "dashboard": {
-    "id": null,
-    "title": "AI 服務監控面板 - 任務 B",
-    "tags": ["ai", "llm", "monitoring", "security"],
-    "timezone": "browser",
+  "id": null,
+  "title": "AI 服務監控面板 - 任務 B",
+  "tags": ["ai", "llm", "monitoring", "security"],
+  "timezone": "browser",
     "panels": [
       {
         "id": 1,
@@ -453,8 +452,6 @@
       "to": "now"
     },
     "timepicker": {},
-    "timezone": "",
-    "title": "AI 服務監控面板",
     "uid": "ai-monitoring-dashboard",
     "version": 1,
     "weekStart": ""

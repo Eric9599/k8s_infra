@@ -145,6 +145,12 @@ kubectl get ciliumnetworkpolicies -A
 ```bash
 # 部署 Prometheus 和 Grafana
 kubectl apply -f monitoring-stack.yaml
+
+# 部署 Grafana Dashboard Provider（自動載入儀表板）
+kubectl apply -f grafana-dashboard-provider.yaml
+
+# 部署 Grafana Dashboards（包含 GPU 監控和 AI 監控儀表板）
+kubectl apply -f grafana-dashboards-configmap.yaml
 ```
 
 **等待監控服務就緒**:
@@ -160,6 +166,11 @@ kubectl wait --for=condition=ready pod -l app=grafana -n monitoring --timeout=30
 # 帳號: admin
 # 密碼: admin123
 ```
+
+**查看自動載入的儀表板**:
+登入後，點選左側選單 "Dashboards"，你會看到兩個自動載入的儀表板：
+1. **GPU 與租戶監控面板** - 顯示實際的 GPU 指標（使用率、功耗、顯存）
+2. **AI 服務監控面板** - AI 服務指標（需要應用程式實作）
 
 ---
 
@@ -411,6 +422,8 @@ kubectl get svc -A | grep LoadBalancer
 | `litellm-stack.yaml` | LiteLLM Gateway 完整堆疊 |
 | `cilium-security-policies.yaml` | 租戶網路隔離策略 |
 | `monitoring-stack.yaml` | Prometheus + Grafana 監控 |
+| `grafana-dashboard-provider.yaml` | Grafana 儀表板自動載入配置 |
+| `grafana-dashboards-configmap.yaml` | Grafana 儀表板定義（GPU + AI 監控） |
 | `mock-exporter-deployment.yaml` | GPU 指標模擬器 |
 | `harbor-lite-values.yaml` | Harbor 輕量配置 |
 
@@ -432,3 +445,11 @@ kubectl get svc -A | grep LoadBalancer
 - [LiteLLM 文檔](https://docs.litellm.ai/)
 - [Harbor 文檔](https://goharbor.io/docs/)
 - [Kind 文檔](https://kind.sigs.k8s.io/)
+- [Grafana Provisioning 文檔](https://grafana.com/docs/grafana/latest/administration/provisioning/)
+
+## 相關文檔
+
+- `GRAFANA_DASHBOARD_SETUP.md` - Grafana Dashboard 自動載入完整指南
+- `DASHBOARD_SUMMARY.md` - Dashboard 實作總結
+- `QUICK_REFERENCE.md` - 快速參考卡
+- `verify-grafana-dashboards.sh` - Dashboard 驗證腳本
