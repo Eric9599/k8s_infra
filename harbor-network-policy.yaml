@@ -1,0 +1,27 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: harbor-internal-allow
+  namespace: harbor-system
+spec:
+  endpointSelector: {} # 選中 Harbor 命名空間內的所有 Pod
+  ingress:
+    # 1. 允許來自 Harbor 內部的所有連線
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: harbor-system
+  egress:
+    # 1. 允許前往 Harbor 內部的所有連線
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: harbor-system
+    # 2. 允許前往 Kube-System 查詢 DNS 
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP

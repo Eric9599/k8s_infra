@@ -1,0 +1,16 @@
+# priority-classes.yaml
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: premium-tier
+value: 1000000            # 數值越大，優先權越高！
+globalDefault: false
+description: "付費租戶專用：當 GPU 資源不足時，K8s 會優先踢掉別人的 Pod 來讓這個階級運行。"
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: free-tier
+value: 500000             
+globalDefault: false
+description: "免費租戶專用：資源不足時，隨時可能被 Premium 租戶搶占 (Preemption)。"

@@ -1,0 +1,19 @@
+# cilium-values.yaml
+kubeProxyReplacement: true
+k8sServiceHost: 2504-cluster-control-plane  
+k8sServicePort: 6443
+
+# 啟用 L2 Announcement 
+l2announcements:
+  enabled: true
+
+# 允許 Cilium 管理外部 IP
+externalIPs:
+  enabled: true
+
+hubble:
+  enabled: true
+  relay:
+    enabled: true
+  ui:
+    enabled: true

@@ -1,0 +1,384 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: strict-isolation-company-a
+  namespace: tenant-company-a
+  labels:
+    security.policy/type: tenant-isolation
+    security.policy/tenant: company-a
+    security.policy/created-by: security-manager
+spec:
+  endpointSelector:
+    matchLabels:
+      tenant: company-a
+  ingress:
+    - 
+      fromEndpoints:
+        - 
+          matchLabels:
+            app: litellm-gateway
+            k8s:io.kubernetes.pod.namespace: ai-system
+      toPorts:
+        - 
+          ports:
+            - 
+              port: 11434
+              protocol: TCP
+    - 
+      fromEndpoints:
+        - 
+          matchLabels:
+            k8s:io.kubernetes.pod.namespace: monitoring
+      toPorts:
+        - 
+          ports:
+            - 
+              port: 9400
+              protocol: TCP
+  egress:
+    - 
+      toEndpoints:
+        - 
+          matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - 
+          ports:
+            - 
+              port: 53
+              protocol: ANY
+    - 
+      toEndpoints:
+        - 
+          matchLabels:
+            app: litellm-gateway
+            k8s:io.kubernetes.pod.namespace: ai-system
+      toPorts:
+        - 
+          ports:
+            - 
+              port: 4000
+              protocol: TCP
+    - 
+      toFQDNs:
+        - 
+          matchName: huggingface.co
+        - 
+          matchName: ollama.ai
+        - 
+          matchPattern: *.huggingface.co
+      toPorts:
+        - 
+          ports:
+            - 
+              port: 443
+              protocol: TCP
+
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: lateral-movement-prevention-company-a
+  namespace: tenant-company-a
+  labels:
+    security.policy/type: lateral-movement-prevention
+    security.policy/tenant: company-a
+spec:
+  endpointSelector:
+    matchLabels:
+      tenant: company-a
+  egress:
+    - 
+      toEndpoints:
+        - 
+          matchExpressions:
+            - 
+              key: tenant
+              operator: NotIn
+              values:
+                - company-a
+                - system
+      toPorts:
+    - 
+      toEndpoints:
+        - 
+          matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+          matchExpressions:
+            - 
+              key: k8s-app
+              operator: NotIn
+              values:
+                - kube-dns
+      toPorts:
+    - 
+      toCIDRSet:
+        - 
+          cidr: 10.96.0.1/32
+      toPorts:
+
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: strict-isolation-company-b
+  namespace: tenant-company-b
+  labels:
+    security.policy/type: tenant-isolation
+    security.policy/tenant: company-b
+    security.policy/created-by: security-manager
+spec:
+  endpointSelector:
+    matchLabels:
+      tenant: company-b
+  ingress:
+    - 
+      fromEndpoints:
+        - 
+          matchLabels:
+            app: litellm-gateway
+            k8s:io.kubernetes.pod.namespace: ai-system
+      toPorts:
+        - 
+          ports:
+            - 
+              port: 11434
+              protocol: TCP
+    - 
+      fromEndpoints:
+        - 
+          matchLabels:
+            k8s:io.kubernetes.pod.namespace: monitoring
+      toPorts:
+        - 
+          ports:
+            - 
+              port: 9400
+              protocol: TCP
+  egress:
+    - 
+      toEndpoints:
+        - 
+          matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - 
+          ports:
+            - 
+              port: 53
+              protocol: ANY
+    - 
+      toEndpoints:
+        - 
+          matchLabels:
+            app: litellm-gateway
+            k8s:io.kubernetes.pod.namespace: ai-system
+      toPorts:
+        - 
+          ports:
+            - 
+              port: 4000
+              protocol: TCP
+    - 
+      toFQDNs:
+        - 
+          matchName: huggingface.co
+        - 
+          matchName: ollama.ai
+        - 
+          matchPattern: *.huggingface.co
+      toPorts:
+        - 
+          ports:
+            - 
+              port: 443
+              protocol: TCP
+
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: lateral-movement-prevention-company-b
+  namespace: tenant-company-b
+  labels:
+    security.policy/type: lateral-movement-prevention
+    security.policy/tenant: company-b
+spec:
+  endpointSelector:
+    matchLabels:
+      tenant: company-b
+  egress:
+    - 
+      toEndpoints:
+        - 
+          matchExpressions:
+            - 
+              key: tenant
+              operator: NotIn
+              values:
+                - company-b
+                - system
+      toPorts:
+    - 
+      toEndpoints:
+        - 
+          matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+          matchExpressions:
+            - 
+              key: k8s-app
+              operator: NotIn
+              values:
+                - kube-dns
+      toPorts:
+    - 
+      toCIDRSet:
+        - 
+          cidr: 10.96.0.1/32
+      toPorts:
+
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: strict-isolation-company-c
+  namespace: tenant-company-c
+  labels:
+    security.policy/type: tenant-isolation
+    security.policy/tenant: company-c
+    security.policy/created-by: security-manager
+spec:
+  endpointSelector:
+    matchLabels:
+      tenant: company-c
+  ingress:
+    - 
+      fromEndpoints:
+        - 
+          matchLabels:
+            app: litellm-gateway
+            k8s:io.kubernetes.pod.namespace: ai-system
+      toPorts:
+        - 
+          ports:
+            - 
+              port: 11434
+              protocol: TCP
+    - 
+      fromEndpoints:
+        - 
+          matchLabels:
+            k8s:io.kubernetes.pod.namespace: monitoring
+      toPorts:
+        - 
+          ports:
+            - 
+              port: 9400
+              protocol: TCP
+  egress:
+    - 
+      toEndpoints:
+        - 
+          matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - 
+          ports:
+            - 
+              port: 53
+              protocol: ANY
+    - 
+      toEndpoints:
+        - 
+          matchLabels:
+            app: litellm-gateway
+            k8s:io.kubernetes.pod.namespace: ai-system
+      toPorts:
+        - 
+          ports:
+            - 
+              port: 4000
+              protocol: TCP
+    - 
+      toFQDNs:
+        - 
+          matchName: huggingface.co
+        - 
+          matchName: ollama.ai
+        - 
+          matchPattern: *.huggingface.co
+      toPorts:
+        - 
+          ports:
+            - 
+              port: 443
+              protocol: TCP
+
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: lateral-movement-prevention-company-c
+  namespace: tenant-company-c
+  labels:
+    security.policy/type: lateral-movement-prevention
+    security.policy/tenant: company-c
+spec:
+  endpointSelector:
+    matchLabels:
+      tenant: company-c
+  egress:
+    - 
+      toEndpoints:
+        - 
+          matchExpressions:
+            - 
+              key: tenant
+              operator: NotIn
+              values:
+                - company-c
+                - system
+      toPorts:
+    - 
+      toEndpoints:
+        - 
+          matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+          matchExpressions:
+            - 
+              key: k8s-app
+              operator: NotIn
+              values:
+                - kube-dns
+      toPorts:
+    - 
+      toCIDRSet:
+        - 
+          cidr: 10.96.0.1/32
+      toPorts:
+
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: ip-blocking-default
+  namespace: default
+  labels:
+    security.policy/type: ip-blocking
+    security.policy/created-by: security-manager
+spec:
+  endpointSelector:
+  ingress:
+    - 
+      fromCIDRSet:
+        - 
+          cidr: 192.168.1.100/32
+          except:
+        - 
+          cidr: 10.0.0.50/32
+          except:
+      toPorts:
+

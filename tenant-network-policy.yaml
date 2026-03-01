@@ -1,0 +1,50 @@
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: "tenant-a-strict-isolation"
+  namespace: "tenant-company-a" 
+spec:
+  endpointSelector:
+    matchLabels:
+      tenant: "company-a" 
+
+  ingress:
+    # 1. 允許 LiteLLM gateway 進來 (Port 11434)
+    - fromEndpoints:
+        - matchLabels:
+            app: "litellm-gateway"
+            k8s:io.kubernetes.pod.namespace: "ai-system"
+      toPorts:
+        - ports:
+            - port: "11434"
+              protocol: TCP
+
+    # 2. 允許 Prometheus 進來 (Port 9400)
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: "monitoring" 
+      toPorts:
+        - ports:
+            - port: "9400"
+              protocol: TCP
+
+  egress:
+    # 1. DNS 權限
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: "kube-system"
+            k8s-app: "kube-dns"
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: ANY
+
+    # 2. 允許連向 Gateway 偵測流量 (Port 4000)
+    - toEndpoints:
+        - matchLabels:
+            app: "litellm-gateway"
+            k8s:io.kubernetes.pod.namespace: "ai-system"
+      toPorts:
+        - ports:
+            - port: "4000"
+              protocol: TCP

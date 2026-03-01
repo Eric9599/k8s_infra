@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mock-exporter
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mock-exporter
+  template:
+    metadata:
+      labels:
+        app: mock-exporter
+    spec:
+      containers:
+      - name: mock-exporter
+        image: mock-exporter:latest
+        ports:
+        - containerPort: 9400
+        env:
+        - name: TENANT_ID
+          value: "default"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mock-exporter
+  namespace: monitoring
+spec:
+  selector:
+    app: mock-exporter
+  ports:
+  - port: 9400
+    targetPort: 9400

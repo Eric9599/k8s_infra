@@ -1,0 +1,32 @@
+expose:
+  type: clusterIP
+  tls:
+    enabled: false
+externalURL: http://localhost:8080
+
+# 關閉吃資源的非核心元件
+trivy:
+  enabled: false
+notary:
+  enabled: false
+chartmuseum:
+  enabled: false
+
+# 限制基礎設施的記憶體使用量
+database:
+  internal:
+    resources:
+      requests:
+        memory: 256Mi
+      limits:
+        memory: 512Mi
+redis:
+  internal:
+    resources:
+      requests:
+        memory: 128Mi
+      limits:
+        memory: 256Mi
+
+persistence:
+  enabled: false

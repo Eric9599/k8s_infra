@@ -1,0 +1,166 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai-system
+---
+# Redis (快取層) - 限制記憶體 128MB
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: litellm-redis
+  namespace: ai-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: litellm-redis
+  template:
+    metadata:
+      labels:
+        app: litellm-redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:alpine
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              memory: "128Mi"
+          ports:
+            - containerPort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: litellm-redis
+  namespace: ai-system
+spec:
+  selector:
+    app: litellm-redis
+  ports:
+    - port: 6379
+---
+# PostgreSQL (持久層) - 限制記憶體 256MB
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: litellm-db
+  namespace: ai-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: litellm-db
+  template:
+    metadata:
+      labels:
+        app: litellm-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          env:
+            - name: POSTGRES_USER
+              value: "litellm"
+            - name: POSTGRES_PASSWORD
+              value: "litellm_secret"
+            - name: POSTGRES_DB
+              value: "litellmdb"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              memory: "256Mi"
+          ports:
+            - containerPort: 5432
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: litellm-db
+  namespace: ai-system
+spec:
+  selector:
+    app: litellm-db
+  ports:
+    - port: 5432
+---
+#ConfigMap (路由邏輯)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: litellm-config
+  namespace: ai-system
+data:
+  config.yaml: |
+    model_list:
+      - model_name: "qwen:0.5b"
+        litellm_params:
+          model: "ollama/qwen:0.5b"
+          api_base: "http://llm-backend-tenant-a.ai-system.svc.cluster.local:11434"
+    litellm_settings:
+      cache: true
+      cache_type: redis
+      redis_host: "litellm-redis"
+      redis_port: 6379
+---
+# LiteLLM Gateway (主程式)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: litellm-gateway
+  namespace: ai-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: litellm-gateway
+  template:
+    metadata:
+      labels:
+        app: litellm-gateway
+    spec:
+      containers:
+        - name: litellm
+          image: ghcr.io/berriai/litellm:main-v1.35.0
+          args: ["--config", "/app/config.yaml"]
+          ports:
+            - containerPort: 4000
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://litellm:litellm_secret@litellm-db.ai-system.svc.cluster.local:5432/litellmdb"
+            - name: LITELLM_MASTER_KEY
+              value: "sk-master-key"
+            - name: REDIS_HOST
+              value: "litellm-redis"
+            - name: REDIS_PORT
+              value: "6379"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              memory: "512Mi"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config.yaml
+              subPath: config.yaml
+      volumes:
+        - name: config-volume
+          configMap:
+            name: litellm-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: litellm
+  namespace: ai-system
+spec:
+  selector:
+    app: litellm-gateway
+  ports:
+    - port: 4000
+  type: LoadBalancer # 讓 Cilium 發配 172.18.x.x 的外部 IP
